@@ -22,23 +22,46 @@ const client = new MongoClient(uri, {
 });
 
 async function run() {
-  const doctorsCollection = client
+  const appointmentOptionCollection = client
     .db("doctorsPortal")
     .collection("appointmentOptions");
   const bookingsCollection = client.db("doctorsPortal").collection("bookings");
 
   app.get("/appointmentOptions", async (req, res) => {
     const date = req.query.date;
-    console.log(date);
+    // console.log(date);
     const query = {};
-    const cursor = doctorsCollection.find();
-    const result = await cursor.toArray();
-    res.send(result);
+    const cursor = appointmentOptionCollection.find(query);
+    const options = await cursor.toArray();
+    const bookingQuery = { appointmentDate: date };
+    const alreadyBooked = await bookingsCollection.find(bookingQuery).toArray();
+    options.forEach((option) => {
+      const optionBooked = alreadyBooked.filter(
+        (book) => book.treatment === option.name
+      );
+      // console.log(optionBooked);
+      const bookedSlots = optionBooked.map((book) => book.slot);
+      const remainingSlots = option.slots.filter(
+        (slot) => !bookedSlots.includes(slot)
+      );
+      option.slots = remainingSlots;
+      console.log(date, option.name, bookedSlots.length);
+    });
+    res.send(options);
   });
 
   app.post("/bookings", async (req, res) => {
     const booking = req.body;
-    console.log(booking);
+    // console.log(booking);
+    const query = {
+      appointmentDate: booking.appointmentDate,
+    };
+    const alreadyBooked = await bookingsCollection.find(query).toArray();
+    if (alreadyBooked.length) {
+      const message = `You already have a ${booking.appointmentDate} `;
+      return res.send({ acknowledged: false, message });
+    }
+
     const result = await bookingsCollection.insertOne(booking);
     res.send(result);
   });
