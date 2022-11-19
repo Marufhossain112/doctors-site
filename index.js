@@ -78,6 +78,7 @@ async function run() {
   });
   app.post("/users", async (req, res) => {
     const user = req.body;
+    console.log(user);
     const data = await usersCollection.insertOne(user);
     res.json(data);
   });
