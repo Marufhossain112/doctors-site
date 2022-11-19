@@ -26,6 +26,7 @@ async function run() {
     .db("doctorsPortal")
     .collection("appointmentOptions");
   const bookingsCollection = client.db("doctorsPortal").collection("bookings");
+  const usersCollection = client.db("doctorsPortal").collection("users");
 
   app.get("/bookings", async (req, res) => {
     const email = req.query.email;
@@ -74,6 +75,11 @@ async function run() {
     }
     const result = await bookingsCollection.insertOne(booking);
     res.send(result);
+  });
+  app.post("/users", async (req, res) => {
+    const user = req.body;
+    const data = await usersCollection.insertOne(user);
+    res.json(data);
   });
 }
 run().catch((err) => console.log(err));
