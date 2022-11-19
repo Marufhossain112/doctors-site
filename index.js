@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
 });
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.efpjwcu.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
+// console.log(uri);
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -26,6 +26,15 @@ async function run() {
     .db("doctorsPortal")
     .collection("appointmentOptions");
   const bookingsCollection = client.db("doctorsPortal").collection("bookings");
+
+  app.get("/bookings", async (req, res) => {
+    const email = req.query.email;
+    console.log(email);
+    const query = { email: email };
+    const cursor = bookingsCollection.find(query);
+    const bookings = await cursor.toArray();
+    res.send(bookings);
+  });
 
   app.get("/appointmentOptions", async (req, res) => {
     const date = req.query.date;
@@ -45,7 +54,7 @@ async function run() {
         (slot) => !bookedSlots.includes(slot)
       );
       option.slots = remainingSlots;
-      console.log(date, option.name, bookedSlots.length);
+      // console.log(date, option.name, bookedSlots.length);
     });
     res.send(options);
   });
@@ -55,13 +64,14 @@ async function run() {
     // console.log(booking);
     const query = {
       appointmentDate: booking.appointmentDate,
+      treatment: booking.treatment,
+      email: booking.email,
     };
     const alreadyBooked = await bookingsCollection.find(query).toArray();
     if (alreadyBooked.length) {
       const message = `You already have a ${booking.appointmentDate} `;
       return res.send({ acknowledged: false, message });
     }
-
     const result = await bookingsCollection.insertOne(booking);
     res.send(result);
   });
