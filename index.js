@@ -1,5 +1,6 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const app = express();
 require("dotenv").config();
@@ -20,6 +21,23 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
+const verifyJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    res.status(401).send("Unauthorized access.");
+  }
+  const token = authHeader.split(" ")[1];
+  // console.log(token);
+  jwt.verify(token, process.env.SECRET_ACCESS_TOKEN, function (err, decoded) {
+    if (err) {
+      res.status(403).send({ message: "Forbidden Access." });
+    }
+    // console.log(decoded, "line no 35");
+    req.decoded =
+      decoded; /* if the token match then set this decoded to req.decoded */
+    next(); /* if you don't do this verify token won't work */
+  });
+};
 
 async function run() {
   const appointmentOptionCollection = client
@@ -27,10 +45,28 @@ async function run() {
     .collection("appointmentOptions");
   const bookingsCollection = client.db("doctorsPortal").collection("bookings");
   const usersCollection = client.db("doctorsPortal").collection("users");
-
-  app.get("/bookings", async (req, res) => {
+  app.get("/jwt", async (req, res) => {
     const email = req.query.email;
-    console.log(email);
+    const query = { email: email };
+    const user = await usersCollection.findOne(query);
+    console.log(user);
+
+    if (user) {
+      const token = jwt.sign({ email }, process.env.SECRET_ACCESS_TOKEN, {
+        expiresIn: "1h",
+      });
+      return res.send({ accessToken: token });
+    }
+    res.status(403).send({ accessToken: "" });
+  });
+
+  app.get("/bookings", verifyJWT, async (req, res) => {
+    const email = req.query.email;
+    // console.log(email);
+    const decodedEmail = req.decoded.email;
+    if (email != decodedEmail) {
+      return res.status(403).send({ message: "Unauthorized access" });
+    }
     const query = { email: email };
     const cursor = bookingsCollection.find(query);
     const bookings = await cursor.toArray();
