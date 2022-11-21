@@ -166,6 +166,12 @@ async function run() {
     const result = await doctorsCollection.insertOne(query);
     res.send(result);
   });
+  app.delete("/doctor/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: ObjectId(id) };
+    const result = await doctorsCollection.deleteOne(filter);
+    res.send(result);
+  });
 }
 run().catch((err) => console.log(err));
 
