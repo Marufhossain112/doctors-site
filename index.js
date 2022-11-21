@@ -48,6 +48,7 @@ async function run() {
   const doctorsCollection = client.db("doctorsPortal").collection("doctors");
   const verifyAdmin = (req, res, next) => {
     console.log("Inside verifyAdmin", req.decoded.email);
+    next();
   };
 
   app.get("/jwt", async (req, res) => {
