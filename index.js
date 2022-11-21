@@ -46,6 +46,10 @@ async function run() {
   const bookingsCollection = client.db("doctorsPortal").collection("bookings");
   const usersCollection = client.db("doctorsPortal").collection("users");
   const doctorsCollection = client.db("doctorsPortal").collection("doctors");
+  const verifyAdmin = (req, res, next) => {
+    console.log("Inside verifyAdmin", req.decoded.email);
+  };
+
   app.get("/jwt", async (req, res) => {
     const email = req.query.email;
     const query = { email: email };
@@ -156,17 +160,17 @@ async function run() {
       .toArray();
     res.send(result);
   });
-  app.get("/doctor", async (req, res) => {
+  app.get("/doctor", verifyJWT, verifyAdmin, async (req, res) => {
     const query = {};
     const result = await doctorsCollection.find(query).toArray();
     res.send(result);
   });
-  app.post("/doctor", async (req, res) => {
+  app.post("/doctor", verifyJWT, async (req, res) => {
     const query = req.body;
     const result = await doctorsCollection.insertOne(query);
     res.send(result);
   });
-  app.delete("/doctor/:id", async (req, res) => {
+  app.delete("/doctor/:id", verifyJWT, async (req, res) => {
     const id = req.params.id;
     const filter = { _id: ObjectId(id) };
     const result = await doctorsCollection.deleteOne(filter);
