@@ -147,6 +147,14 @@ async function run() {
     const user = await usersCollection.findOne(query);
     res.send({ isAdmin: user?.role == "admin" });
   });
+  app.get("/appointmentsSpecialty", async (req, res) => {
+    const query = {};
+    const result = await appointmentOptionCollection
+      .find(query)
+      .project({ name: 1 })
+      .toArray();
+    res.send(result);
+  });
 }
 run().catch((err) => console.log(err));
 
