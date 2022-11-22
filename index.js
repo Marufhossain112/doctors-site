@@ -1,4 +1,5 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const stripe = require("stripe")(process.env.sk_key);
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
