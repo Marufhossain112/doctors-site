@@ -190,6 +190,12 @@ async function run() {
     );
     res.send(results);
   });
+  app.get("/bookings/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await bookingsCollection.findOne(query);
+    res.send(result);
+  });
 }
 run().catch((err) => console.log(err));
 
