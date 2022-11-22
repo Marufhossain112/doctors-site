@@ -175,6 +175,21 @@ async function run() {
     const result = await doctorsCollection.deleteOne(filter);
     res.send(result);
   });
+  app.get("/addPrices", async (req, res) => {
+    const filter = {};
+    const options = { upsert: true };
+    const updateDoc = {
+      $set: {
+        price: 99,
+      },
+    };
+    const results = await appointmentOptionCollection.updateMany(
+      filter,
+      updateDoc,
+      options
+    );
+    res.send(results);
+  });
 }
 run().catch((err) => console.log(err));
 
