@@ -1,5 +1,7 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const stripe = require("stripe")(process.env.sk_key);
+const stripe = require("stripe")(
+  "sk_test_51M6sUXGGuleKu5Jsym2NEU2bWRQREdPlV3H2ZqmS5ysIuTlqvvmYgEU4sGsF08OTsGuIglJJp15Y91nrMZucE67m00n04m3uM3"
+);
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
@@ -200,14 +202,14 @@ async function run() {
   app.post("/create-payment-intent", async (req, res) => {
     const price = req.body.price;
     const amount = price * 100;
-  });
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: amount,
-    currency: "usd",
-    payment_method_types: ["card"],
-  });
-  res.send({
-    clientSecret: paymentIntent.client_secret,
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: "usd",
+      payment_method_types: ["card"],
+    });
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
   });
 }
 run().catch((err) => console.log(err));
